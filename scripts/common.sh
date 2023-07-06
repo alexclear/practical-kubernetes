@@ -78,3 +78,27 @@ EOF
 if ! [ -f /var/lib/ceph.img ]; then
     dd if=/dev/zero of=/var/lib/ceph.img bs=1M count=20480
 fi
+
+cat >> /etc/systemd/system/ceph-loop-setup.service << EOF
+[Unit]
+Description=Setup loop devices for Ceph
+DefaultDependencies=no
+Conflicts=umount.target
+Before=local-fs.target
+After=systemd-udevd.service
+Required=systemd-udevd.service
+
+[Service]
+Type=oneshot
+ExecStart=/sbin/losetup /dev/loop11 /var/lib/ceph.img
+ExecStop=/sbin/losetup -d /dev/loop11
+TimeoutSec=60
+RemainAfterExit=yes
+
+[Install]
+WantedBy=local-fs.target
+Also=systemd-udevd.service
+EOF
+
+sudo systemctl daemon-reload
+sudo systemctl enable ceph-loop-setup --now
