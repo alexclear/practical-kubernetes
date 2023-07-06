@@ -74,3 +74,7 @@ cat > /etc/default/kubelet << EOF
 KUBELET_EXTRA_ARGS=--node-ip=$local_ip
 ${ENVIRONMENT}
 EOF
+
+if ! [ -f /var/lib/ceph.img ]; then
+    dd if=/dev/zero of=/var/lib/ceph.img bs=1M count=20480
+fi
