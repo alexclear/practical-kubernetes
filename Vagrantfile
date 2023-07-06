@@ -26,6 +26,7 @@ Vagrant.configure("2") do |config|
   config.vm.define "master" do |master|
     master.vm.hostname = "master-node"
     master.vm.network "private_network", ip: settings["network"]["control_ip"]
+    master.vm.network "forwarded_port", guest: 30080, host: 30080
     if settings["shared_folders"]
       settings["shared_folders"].each do |shared_folder|
         master.vm.synced_folder shared_folder["host_path"], shared_folder["vm_path"]
