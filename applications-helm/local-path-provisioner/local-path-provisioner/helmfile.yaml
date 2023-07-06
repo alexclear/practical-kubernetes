@@ -1,0 +1,10 @@
+repositories:
+- name: naps
+  url: https://naps.github.io/helm-charts/
+
+releases:
+- name: local-path-provisioner
+  chart: naps/local-path-provisioner
+  version: 0.0.14
+  values:
+  - ./values.yaml
