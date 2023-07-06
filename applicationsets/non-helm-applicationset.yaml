@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra-applications-raw
+  namespace: argocd
+spec:
+  generators:
+  - git:
+      repoURL: https://github.com/alexclear/practical-kubernetes.git
+      revision: main
+      directories:
+      - path: applications-raw/**/*
+  template:
+    metadata:
+      name: '{{path.basename}}'
+    spec:
+      project: infrastructure
+      source:
+        repoURL: https://github.com/alexclear/practical-kubernetes.git
+        targetRevision: 'main'
+        path: '{{path}}'
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path[1]}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true

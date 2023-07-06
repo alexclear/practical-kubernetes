@@ -1,0 +1,134 @@
+# values.yaml
+global:
+  addPrometheusAnnotations: true
+
+redis-ha:
+  enabled: false
+
+controller:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 866M
+    requests:
+      cpu: 126m
+      memory: 866M
+
+server:
+  replicas: 1
+  ingress:
+    enabled: false
+    annotations:
+      kubernetes.io/ingress.class: nginx
+      nginx.ingress.kubernetes.io/server-snippet: |
+        proxy_ssl_verify off;
+        proxy_set_header X-Forwarded-Proto https;
+      ingress.kubernetes.io/protocol: https
+      ingress.kubernetes.io/secure-backends: "true"
+      nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - argocd.example.com
+    paths:
+      - /
+    tls:
+      - secretName: argocd-ingress-tls
+        hosts:
+          - argocd.example.com
+  resources:
+    limits:
+      cpu: 1
+      memory: 105M
+    requests:
+      cpu: 15m
+      memory: 105M
+
+repoServer:
+  replicas: 1
+  volumes:
+    - name: custom-tools
+      emptyDir: {}
+  initContainers:
+    - name: install-kustomize
+      image: alpine:3.13
+      command: ["/bin/sh", "-c"]
+      args:
+        - |
+          wget -O - https://github.com/kubernetes-sigs/kustomize/releases/download/kustomize%2Fv4.4.0/kustomize_v4.4.0_linux_amd64.tar.gz | tar xz && mv kustomize /custom-tools/
+      volumeMounts:
+        - mountPath: /custom-tools
+          name: custom-tools
+  extraContainers:
+  - name: plugin
+    image: lucj/argocd-plugin-helmfile:latest
+    command: ["/var/run/argocd/argocd-cmp-server"]
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 999
+    env:
+      - name: PATH
+        value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/custom-tools
+    volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /custom-tools
+      name: custom-tools
+    resources:
+      limits:
+        cpu: 1
+        memory: 411M
+      requests:
+        cpu: 11m
+        memory: 411M
+  resources:
+    limits:
+      cpu: 1
+      memory: 127M
+    requests:
+      cpu: 11m
+      memory: 127M
+
+applicationSet:
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 1
+      memory: 105M
+    requests:
+      cpu: 15m
+      memory: 105M
+
+configs:
+  ssh:
+    knownHosts: |
+      gitlab.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAfuCHKVTjquxvt6CM6tdG4SLp1Btn/nOeHHE5UOzRdf
+
+dex:
+  resources:
+    limits:
+      cpu: 1
+      memory: 105M
+    requests:
+      cpu: 15m
+      memory: 105M
+
+notifications:
+  resources:
+    limits:
+      cpu: 1
+      memory: 105M
+    requests:
+      cpu: 15m
+      memory: 105M
+
+redis:
+  resources:
+    limits:
+      cpu: 1
+      memory: 127M
+    requests:
+      cpu: 15m
+      memory: 127M
