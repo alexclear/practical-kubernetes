@@ -1,0 +1,10 @@
+repositories:
+- name: rook-release
+  url: https://charts.rook.io/release
+
+releases:
+- name: rook-ceph
+  chart: rook-release/rook-ceph
+  version: v1.11.5
+  values:
+  - ./values.yaml
