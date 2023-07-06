@@ -1,25 +1,5 @@
 operatorNamespace: rook-ceph
 
-ingress:
-  # -- Enable an ingress for the ceph-dashboard
-  dashboard:
-    annotations:
-    # If the dashboard has ssl: true the following will make sure the NGINX Ingress controller can expose the dashboard correctly
-      nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
-      nginx.ingress.kubernetes.io/server-snippet: |
-        proxy_ssl_verify off;
-        proxy_set_header X-Forwarded-Proto https;
-    host:
-      name: ceph.example.com
-      path: "/"
-    tls:
-    - hosts:
-        - ceph.example.com
-      secretName: ceph-ingress-tls
-    ## Note: Only one of ingress class annotation or the `ingressClassName:` can be used at a time
-    ## to set the ingress class
-    ingressClassName: nginx
-
 cephBlockPools:
   - name: ceph-blockpool
     storageClass:
